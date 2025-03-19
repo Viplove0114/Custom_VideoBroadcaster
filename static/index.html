@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Video Broadcaster</title>
+
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color : #333;
+            background: url('./static/bk.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        button{
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:hover{background: #0056b3;}
+        h1 { color: #444; }
+        .container{
+            width: 70%;
+            max-width: 750px;
+            position: relative;
+            text-align:left;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 6px 6px rgba(0,0,0,0.23);
+            border: 2px solid #e0e0e0;
+            background: linear-gradient(145deg, #ffffff, #e0e0e0);
+        }
+
+        .controls{
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .button, .inputs{
+            display: flex;
+            flex-direction:column;
+            gap: 15px;
+        }
+
+        select, input[type="number"], input[type="range"]{
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #ccc;   
+            border: 1px solid #f5c6cb;
+        }
+
+        .logo{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
+            border-radius: 10%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <img src="./static/thumbnail.jpg", class ="logo">
+
+
+    <div class="container">
+        <h1>Virtual Camera Broadcaster </h1>
+        <p>Stream your video with virtual background</p>
+        <div class ="controls">
+            <div class="button">
+                <button onclick="getDevices()">List Devices</button>
+                <button onclick="startStream()">Start Stream</button>
+                <button onclick="stopStream()">Stop Stream</button>
+            </div>
+            <div class="inputs">
+                <label for = "CAMERA">Choose Camera </label>
+                <select id="CAMERA"></select>
+    
+                <label for="fps" >FPS</label>
+                <input type="number" id="FPS" value="15" min="1"max="60">
+    
+                <label for = "blur"> Blur Strength (odd number)</label>
+                <input type="range" id ="blur" min="1" max="52" value="10">
+    
+                <label for ="background"> Background </label>
+                <select id="background">
+                    <option value="none">No Background</option>
+                    <option value="blur">Blur </option>
+                    <option value="pixelate">Default</option>
+                </select>
+                
+            </div>
+
+        </div>
+        <div id ="status"> Status : Waiting for action... </div>
+    </div>
+    <script>
+        function getDevices(){
+            fetch('/devices')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('CAMERA');
+                select.innerHTML = '';
+                data.forEach(device => {
+                    select.innerHTML += `<option value="${device.id}">${device.name}</option>`;
+                });
+            });
+        }
+
+        function startStream(){
+            const cameraId = document.getElementById('CAMERA').value;
+            const fps = document.getElementById('FPS').value;
+            const blur = document.getElementById('blur').value;
+            const background = document.getElementById('background').value;
+
+            fetch('/start?source=${source}&fps=${fps}&blur=${blur}&background=${background}')
+        }
+
+        function stopStream(){
+            fetch('/stop')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').innerHTML = data.message;
+            });
+        }
+    </script>
+</body>
+</html>
